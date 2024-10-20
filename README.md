@@ -21,7 +21,7 @@ se desarrolla la carrera.
 
 # Compilación y Ejecución
 
-## Compilación Linux:
+### Compilación Linux:
 
 Dentro del directorio del proyecto y abriendo una terminal en este, puedes compilar fácilmente el programa con `Makefile`
 que ya viene incluido en el proyecto.
@@ -30,7 +30,7 @@ que ya viene incluido en el proyecto.
 make
 ```
 
-## Ejecución:
+### Ejecución:
 
 Para ejecutar esta simulación de carreras, tienes que ingresar dos parámetros, la distancia total que tendrá la carrera y 
 la cantidad de autos. Ejemplo:
