@@ -2,49 +2,65 @@
 #include<thread>
 #include<vector>
 #include<mutex>
+#include<cstdlib>
+#include<ctime>
+#include<chrono>
 #include<stdlib.h> // atoi
 #include<unistd.h> // sleep
-
-/*
-
-***** PRUEBA *****
-
-*/
 
 using namespace std;
 
 mutex mtx;
 
-void fill_vector(vector<int>& vec, int start, int end) {
-    for (int i = start; i < end; ++i) {
-        // Sección crítica protegida por un mutex
-        lock_guard<mutex> lock(mtx);
-        vec[i] = i;
+//Funcion que representa la carrera de un auto
+void grandprix(int id, int m, int* dist_reco){
+    int vel= rand() % 10 + 1; //Velocidad 
+    dist_reco += vel;
+
+    if (*dist_reco > m)
+    {
+        *dist_reco = m;
     }
+    
+        lock_guard<mutex> lock(mtx); //Protege la salida de la terminal
+        cout << "Automovil" << id << " avanza " << vel << " metros (total: " << dist_reco << " metros)" << endl;
+    
+
+    this_thread::sleep_for(chrono::milliseconds(100 + rand() % 400));//Espera en la pantalla
 }
+
+
 
 int main(){
 
-    int n; // tamano del vector
+    int m,n; // Tamaño de la pista y cantidad de automoviles
 
-    cout << "Ingrese tamano del vector pista: " << endl;
+// Se obtiene tamaño de la pista y cantidad de automoviles
+    cout << "Ingrese tamaño de la pista " << endl;
+    cin >> m;
+
+
+    cout << "Ingrese la cantidad de automoviles en la carrera: " << endl;
     cin >> n;
 
-    int automovil; // numero de hilos
+srand(static_cast<unsigned int>(time(0)));
+vector<thread> hilos;
+vector<int*> recorrido(n); // Distancia recorrida de cada auto con punteros
 
-    cout << "Ingrese la cantidad de hilos autos: " << endl;
-    cin >> automovil;
+//Arreglo de punteros
+    for (int i = 0; i < n; ++i) {
+        recorrido[i] = new int(0); 
+    }
 
-    vector<int> vec(n);
-    vector<thread> threads;
+//Crear y correr las hebras para la carrera *Funcion*
+for (int i = 0; i < n; i++) {
+    //Emplace back (?)
+    hilos.emplace_back(grandprix, i, m, (recorrido[i]));
+}
 
-    int chunk_size = n / automovil;
-
-    // Crear los hilos y asignarles la parte del trabajo
-    for (int i = 0; i < automovil; ++i) {
-        int start = i * chunk_size;
-        int end = (i == automovil - 1) ? n : start + chunk_size;
-        threads.emplace_back(fill_vector, ref(vec), start, end);
+//Libera la memoria
+    for (int i = 0; i < n; ++i) {
+        delete recorrido[i]; 
     }
 
     return 0;
