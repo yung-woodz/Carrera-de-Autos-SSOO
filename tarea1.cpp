@@ -6,19 +6,18 @@
 #include<ctime>
 #include<chrono>
 #include<stdlib.h> // atoi
-#include<unistd.h> // sleep
 
 using namespace std;
 
 mutex mtx;
 
 //Funcion que representa la carrera de un auto
-void grandprix(int id, int m, int* dist_reco){
+void grandprix(int id, int m, int* dist_reco, vector<int>*llegada){
 
     while(*dist_reco < m){
 
         int vel= rand() % 10 + 1; //Velocidad 
-        dist_reco += vel;
+        *dist_reco += vel;
 
         if (*dist_reco > m){
 
@@ -28,7 +27,7 @@ void grandprix(int id, int m, int* dist_reco){
         
         {
             lock_guard<mutex> lock(mtx); //Protege la salida de la terminal
-            cout << "Automovil " << id << " avanza " << vel << " metros (total: " << dist_reco << " metros)" << endl;
+            cout << "Auto" << id << " avanza " << vel << " metros (total: " << *dist_reco << " metros)" << endl;
         }
 
         this_thread::sleep_for(chrono::milliseconds(100 + rand() % 400));//Espera en la pantalla
@@ -38,7 +37,8 @@ void grandprix(int id, int m, int* dist_reco){
     
     {
         lock_guard<mutex> lock(mtx); //Protege la salida de la terminal
-        cout << "Automovil " << id << " terminó la carrera!!!" << endl;
+        cout << "Auto" << id << " terminó la carrera!!!" << endl;
+        llegada->push_back(id);
     }
 
     
@@ -46,42 +46,51 @@ void grandprix(int id, int m, int* dist_reco){
 
 
 
-int main(){
+int main(int argc, char* argv[]){
 
-    int m,n; // Tamaño de la pista y cantidad de automoviles
+    if(argc != 3) cerr << "Tienes que ingresar <distancia> <cantidad_autos>" << endl;
 
-    
-    cout << "Ingrese tamaño de la pista " << endl;
-    cin >> m; // Se obtiene tamaño de la pista y cantidad de automoviles
+    int m = stoi(argv[1]); // Tamaño de la pista
+    int n = stoi(argv[2]); // Cantidad de automoviles
 
-    
-    cout << "Ingrese la cantidad de automoviles en la carrera: " << endl;
-    cin >> n; // Cantidad de autos que estaran en la carrera
+    // Validación de la distancia y cantidad de autos
+    if (n < 2) cerr << "La cantidad de autos debe ser mayor o igual a 2" << endl;
+    if (m < 50) cerr << "La distancia de la pista debe ser mayor o igual a 50 metros" << endl;
 
     srand(static_cast<unsigned int>(time(0))); // se activa la funcion de aleatoriedad
     vector<thread> hilos;
     vector<int*> recorrido(n); // Distancia recorrida de cada auto con punteros
+    vector<int> llegada;
 
     //Arreglo de punteros
     for (int i = 0; i < n; ++i) {
         recorrido[i] = new int(0); 
     }
 
+    cout << "Distancia total carrera: " << m << " metros" << endl;
+    cout << "___________________________________" << endl;
+
     //Crear y correr las hebras para la carrera *Funcion*
     for (int i = 0; i < n; i++) {
-        //Emplace back (?)
-        hilos.emplace_back(grandprix, i, m, (recorrido[i]));
+        hilos.emplace_back(grandprix, i+1, m, (recorrido[i]), &llegada);
     }
 
-    for (auto& hilo : hilos) {
+    for (auto& hilo : hilos) { // el hilo se iterá así mismo para confirmar si terminó o no su proceso
         if (hilo.joinable()) {
-            hilo.join();
+            hilo.join(); // se utiliza para unir el hilo actual con el hilo principal
         }
     }
 
     //Libera la memoria
     for (int i = 0; i < n; ++i) {
         delete recorrido[i]; 
+    }
+
+    cout << "\nLa carrera ha terminado!" << endl;
+    cout << "Lugar       Auto" << endl;
+    cout << "________________" << endl;
+    for (size_t i = 0; i < llegada.size(); ++i) {
+        cout << (i + 1) << "           Auto" << llegada[i] << endl;
     }
 
     return 0;
