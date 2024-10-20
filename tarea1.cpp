@@ -5,47 +5,34 @@
 #include<stdlib.h> // atoi
 #include<unistd.h> // sleep
 
-/*
-
-***** PRUEBA *****
-
-*/
-
 using namespace std;
 
-mutex mtx;
+mutex mtx;//Para sincronizar la salida a la terminal
 
-void fill_vector(vector<int>& vec, int start, int end) {
-    for (int i = start; i < end; ++i) {
-        // Sección crítica protegida por un mutex
-        lock_guard<mutex> lock(mtx);
-        vec[i] = i;
-    }
-}
+//Funciones
+
+
 
 int main(){
 
-    int n; // tamano del vector
+    int m,automoviles; // Tamaño de la pista y cantidad de automoviles
 
-    cout << "Ingrese tamano del vector pista: " << endl;
-    cin >> n;
+// Se obtiene tamaño de la pista y cantidad de automoviles
+    cout << "Ingrese tamaño de la pista " << endl;
+    cin >> m;
 
-    int automovil; // numero de hilos
 
-    cout << "Ingrese la cantidad de hilos autos: " << endl;
-    cin >> automovil;
+    cout << "Ingrese la cantidad de automoviles en la carrera: " << endl;
+    cin >> automoviles;
 
-    vector<int> vec(n);
-    vector<thread> threads;
+vector<thread> hilos;
+vector<int> vec(m, 0); // Distancia recorrida
 
-    int chunk_size = n / automovil;
 
-    // Crear los hilos y asignarles la parte del trabajo
-    for (int i = 0; i < automovil; ++i) {
-        int start = i * chunk_size;
-        int end = (i == automovil - 1) ? n : start + chunk_size;
-        threads.emplace_back(fill_vector, ref(vec), start, end);
-    }
+//Crear y correr las hebras para la carrera *Funcion*
+for (int i = 0; i < automoviles; i++) {
+    cout << "Creando hilo " << i << endl; 
+}
 
     return 0;
 
